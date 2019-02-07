@@ -1,6 +1,7 @@
-
 """ Make simple, pretty Sankey Diagrams """
 
-from pysankey.sankey import sankey, PySankeyException, NullsInFrame, LabelMismatch
+# This Module
+from pysankey.sankey import (_EMPTY, _SKIP, LabelMismatch, NullsInFrame,
+                             PySankeyException, sankey)
 
 __all__ = ["sankey", "PySankeyException", "NullsInFrame", "LabelMismatch"]
