@@ -83,23 +83,40 @@ With fruits.txt :
 You can generate a sankey's diagram with this code:
 
 ```python
-import pandas as pd
-from pysankey import sankey
+from pysankey import _EMPTY, _SKIP, sankey
 
-pd.options.display.max_rows = 8
-df = pd.read_csv(
-    'pysankey/fruits.txt', sep=' ', names=['true', 'predicted']
-)
-colorDict = {
-    'apple':'#f71b1b',
-    'blueberry':'#1b7ef7',
-    'banana':'#f3f71b',
-    'lime':'#12e23f',
-    'orange':'#f78c1b'
+pd.set_option("display.max_columns", None)
+
+color_dict = {
+    "apple": "#f71b1b",
+    "blueberry": "#1b7ef7",
+    "banana": "#f3f71b",
+    "lime": "#12e23f",
+    "orange": "#f78c1b",
+    "raspberry": "#e30b5c",
 }
+
+
+fruits = ["banana", "raspberry", "lime", "orange", "apple", _SKIP]
+
+N = 1100
+N_steps = 3
+
+values = [
+    np.random.choice(fruits, N, p=((p / p.min()) / (p / p.min()).sum()))
+    for p in np.random.rand(N_steps, len(fruits))
+]
+
 sankey(
-    df['true'], df['predicted'], aspect=20, colorDict=colorDict,
-    fontsize=12, figureName="fruit"
+    values,
+    aspect=20,
+    fontsize=12,
+    figure_name="fruits",
+    steps=[1, 2],
+    color_dict=color_dict,
+    none_value=2,
+    font_family="sans",
+    color="gradient",
 )
 # Result is in "fruit.png"
 ```
@@ -127,12 +144,20 @@ import pandas as pd
 from pysankey import sankey
 
 df = pd.read_csv(
-    'pysankey/customers-goods.csv', sep=',',
-    names=['id', 'customer', 'good', 'revenue']
+    "pysankey/customers-goods.csv",
+    sep=",",
+    names=["id", "customer", "good", "revenue"],
+    header=0,
 )
+
 sankey(
-    left=df['customer'], right=df['good'], rightWeight=df['revenue'], aspect=20,
-    fontsize=20, figureName="customer-good"
+    [df["customer"], df["good"]],
+    weights=[None, df["revenue"]],
+    aspect=20,
+    fontsize=20,
+    figure_name="customer-good",
+    color="gradient",
+    weights_are_relative=True,
 )
 # Result is in "customer-good.png"
 ```
