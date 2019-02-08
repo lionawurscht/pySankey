@@ -145,6 +145,7 @@ def sankey(
     text_on_boxes=False,
     none_value=_EMPTY,
     skip_value=_SKIP,
+    weights_are_relative=False,
     alpha=0.65,
 ):
     """
@@ -165,10 +166,11 @@ def sankey(
     :param bar_distance: the distance the label bars should have to each other
     :param bar_width: the horizontal width of the bars
     :param close_plot: if True the plot will be closed
-    :param vertical_align: if False, no height correction will be done to align each step vertically (not implemented)
+    :param vertical_align: if False, no height correction will be done to align each step vertically
     :param text_on_boxes: if True, labels will be displayed on their boxes
     :param none_value: a value that should be used for empty values, no strip will be painted to or from an empty value
     :param skip_value: a value that represents a skipped step, strips will be drawn that directly go to the next non-skip step
+    :param weights_are_relative: if True, weights will be transformed to sum up to one
     :param alpha: the alpha value of the strips
 
     :returns: None
@@ -177,7 +179,7 @@ def sankey(
     if isinstance(values, pd.DataFrame):
         values = [values[i] for i in values.columns]
 
-    weights = weights if weights is not None else [[]] * len(values)
+    weights = weights if weights is not None else [pd.Series([])] * len(values)
 
     labels = labels if labels is not None else [[]] * len(values)
 
@@ -187,8 +189,15 @@ def sankey(
     total_steps = sum(steps)
 
     # Check weights
-    weights[0] = weights[0] or np.ones(len(values[0]))
-    weights[1:] = [w or weights[0] for w in weights[1:]]
+    weights[0] = (
+        np.ones(len(values[0]))
+        if weights[0] is None or weights[0].empty
+        else weights[0]
+    )
+    weights[1:] = [weights[0] if w is None or w.empty else w for w in weights[1:]]
+
+    if weights_are_relative:
+        weights = [(w / w.min()) / (w / w.min()).sum() for w in weights]
 
     plt.figure()
     plt.rc("text", usetex=False)
